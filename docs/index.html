@@ -16,71 +16,71 @@
 
 <script>
 
-fetch('inventory.json')
-.then(r => r.json())
-.then(data => {
+const FOOD_URL = "https://script.google.com/macros/s/AKfycbzT1xj36H9EUfqIBmX4VLPce_5rQpn9VyCUtXJHYfLZReRYxY9fYh4uPnGgAjXtS2Nw/exec";
+const INVENTORY_URL = "https://script.google.com/macros/s/AKfycbyktskG7-NYPOEkFr-1IpIT4jjD0Ckni0abAZ8DXSsionIDQ1nGgpn7na9zKCjEjA3pMw/exec";
+const SALES_URL = "https://script.google.com/macros/s/AKfycbwyzPSXYxgiBHN8dRhgW6a4Ya9bY97QjXBhYgVPofeJaKxSctaRZ3lHwOHazSwr7fc/exec";
+const PO_URL = "https://script.google.com/macros/s/AKfycbx5xUhx8x5BftM2MOqInfu_ZmbFTlz-1rcuWxNK-WCSFmMqWmV7rRtmDzQ9gtAWlGdmrA/exec";
+const RECEIVING_URL = "https://script.google.com/macros/s/AKfycbyP2t5N-KZLP_Ap7wdDVeOrShUsnlXHK0MlVLttK5ak2o5E8Nb5KB66dEwr99JncvCg/exec";
 
-let html = "<table border='1'>";
+async function loadData() {
 
-html += `
-<tr>
-<th>Serial</th>
-<th>Item</th>
-<th>On Hand</th>
-</tr>
-`;
+  const [food, inventory] = await Promise.all([
+    fetch(FOOD_URL).then(r => r.json()),
+    fetch(INVENTORY_URL).then(r => r.json())
+  ]);
 
-data.forEach(item => {
+  // INVENTORY TABLE
+  let invHTML = `
+    <table border="1">
+      <tr>
+        <th>Serial</th>
+        <th>Item</th>
+        <th>On Hand</th>
+        <th>Category</th>
+      </tr>
+  `;
 
-html += `
-<tr>
-<td>${item.Serial}</td>
-<td>${item.Item}</td>
-<td>${item["On Hand"]}</td>
-</tr>
-`;
+  inventory.forEach(item => {
+    invHTML += `
+      <tr>
+        <td>${item.Serial}</td>
+        <td>${item.Item}</td>
+        <td>${item.OnHand}</td>
+        <td>${item.Category || ""}</td>
+      </tr>
+    `;
+  });
 
-});
+  invHTML += "</table>";
 
-html += "</table>";
+  document.getElementById("inventory").innerHTML = invHTML;
 
-document.getElementById(
-"inventory"
-).innerHTML = html;
+  // ORDERS (simple placeholder logic for now)
+  let orderHTML = `
+    <table border="1">
+      <tr>
+        <th>Serial</th>
+        <th>Item</th>
+      </tr>
+  `;
 
-});
+  inventory.forEach(item => {
+    if (item.OnHand < 10) {
+      orderHTML += `
+        <tr>
+          <td>${item.Serial}</td>
+          <td>${item.Item}</td>
+        </tr>
+      `;
+    }
+  });
 
-fetch('orders.json')
-.then(r => r.json())
-.then(data => {
+  orderHTML += "</table>";
 
-let html = "<table border='1'>";
+  document.getElementById("orders").innerHTML = orderHTML;
+}
 
-html += `
-<tr>
-<th>Item</th>
-<th>Order Qty</th>
-</tr>
-`;
-
-data.forEach(item => {
-
-html += `
-<tr>
-<td>${item.Item}</td>
-<td>${item["Reorder Qty"]}</td>
-</tr>
-`;
-
-});
-
-html += "</table>";
-
-document.getElementById(
-"orders"
-).innerHTML = html;
-
-});
+loadData();
 
 </script>
 
